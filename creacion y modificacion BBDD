@@ -1,0 +1,19 @@
+create database pruebaexamen2;
+use pruebaexamen2;
+
+create table tabla(
+id int AUTO_INCREMENT primary key,
+nombre varchar(10) not null CHECK (LENGTH(nombre) >= 5),
+apellido varchar(10) constraint chk_apellido check(apellido not like '%s%s%'),
+altura dec(3,2) not null,
+edad int constraint chk_edad check (edad between 18 and 64),
+direccion varchar(50) not null constraint chk_direccion check ((direccion like '%calle%' or direccion like '%avenida%') and (direccion like '%nº%' or direccion like '%bloque%') and (length(direccion) >= 10)),
+genero enum('Masculino','Femenino','Otros') default 'Otros',
+fecha date not null constraint chk_fecha check (month(fecha)!=6 and month(fecha)!=7 and month(fecha)!=8 and month(fecha)!=9),
+email varchar(50) constraint chk_email check (email like '%@%' and (email like '%gmail%' or email like '%hotmail%'))
+)auto_increment=50;
+
+insert into tabla (nombre, altura, direccion, fecha) values
+('Juanita', 1.75, 'calle San Miguel nº 10', '2022-05-15'),
+('María', 1.68, 'avenida España bloque 3, 2ºA', '2022-02-15'),
+('Pedro', 1.80, 'calle Mayor nº 25', '2022-03-21');
