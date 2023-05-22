@@ -1,0 +1,123 @@
+CREATE DATABASE IF NOT EXISTS Disney;
+USE Disney;
+
+CREATE TABLE IF NOT EXISTS Peliculas(
+	id_peli int,
+    nombre_peli VARCHAR(30),
+    duracion INT,
+    director_peli VARCHAR(20),
+    género_peli ENUM ('acción', 'drama', 'comedia'),
+    nota_peli FLOAT,
+    primary key (id_peli)
+);
+
+CREATE TABLE IF NOT EXISTS Actores(
+	id_actor INT,
+    nombre VARCHAR(30),
+    fecha_nac DATE,
+    sueldo INT,
+    sexo ENUM ('femenino', 'masculino', 'otros'),
+    primary key (id_actor)
+);
+
+INSERT INTO Actores(id_actor, nombre, fecha_nac, sueldo, sexo) VALUES
+(101, 'Leonarno', '1980/12/01' , 3000000, 'masculino'),
+(102, 'Julia', '1997/09/09' , 1000000, 'femenino'),
+(103, 'Brad', '1983/02/02' , 700000, 'masculino'),
+(104, 'Carlos', '1986/03/03' , 250000, 'masculino'),
+(105, 'Santiago', '1970/04/04' , 4000000, 'masculino'),
+(106, 'Penelope', '1976/05/05' , 23000, 'femenino'),
+(107, 'Noa', '1981/06/06' , 770000, 'otros'),
+(108, 'Jon', '1996/07/07' , 6000, 'otros');
+
+INSERT INTO Peliculas (nombre_peli, duracion, director_peli, género_peli, nota_peli, id_peli) VALUES
+('Bright', 120, 'Fernando', 'acción', 3.1, 1),
+('Frida', 100, 'Daniel', 'drama', 7.6, 2),
+('Los dos papas', 160, 'Adrián', 'comedia', 8.3, 3),
+('Animales nocturnos', 185, 'Tomás', 'drama', 9.5, 4),
+('Oceans Eleven', 150, 'Nuria', 'acción', 3.5, 5),
+('Buscando a Nemo', 120, 'Jon', 'acción', 2.1, 6),
+('El Hoyo', 110, 'Ivan', 'acción', 9.9, 7),
+('Diamante en bruto', 140, 'Paola', 'acción', 7, 8);
+
+/*Ejercicio 1.- Crea un procedimiento que modifique la puntuación de la película “Buscando a Nemo” 
+sumándole un punto a su puntuación establecida. Muestra la tabla resultante al finalizar el procedimiento.
+- Realiza la suma del punto mediante la función “Sumapunto” e intégrala en el procedimiento
+	- En el procedimiento deberás insertar solo el nombre de la película
+
+	*Las funciones NO realizarán ninguna modificación en las tablas*/
+    
+    drop procedure nemo;
+    
+    delimiter //
+    create procedure nemo(nombre varchar(30))
+    begin
+    declare nota_nemo float;
+    declare nota_nemo2 float;
+    set nota_nemo = (select nota_peli from peliculas where nombre_peli=nombre);
+    
+    set nota_nemo2=(select sumapunto(nota_nemo));
+    
+    update peliculas set nota_peli=nota_nemo2 where nombre_peli= nombre;
+    select * from Peliculas;
+    end//
+    
+    delimiter //
+    create function sumapunto(nota float) returns float no sql
+    begin
+    declare nota_final float;
+    set nota_final = nota + 1;
+    return nota_final;
+    end//
+    
+    call nemo("Buscando a Nemo");
+    
+/*Ejercicio 2.- Crea un procedimiento que duplique el sueldo del actor que menos dinero cobre, 
+y divida entre dos el sueldo del actor que más cobre. Muestra la tabla resultante al finalizar el procedimiento.
+
+	- Realiza la modificación de los sueldos mediante el procedimiento modificar sueldos
+	- Inserta dos funciones, “duplicar” y “dividir”, que devuelvan el valor resultado de los sueldos
+	- La selección de los actores que más y menos cobran, se realizará en el procedimiento
+
+	*Las funciones NO realizarán ninguna modificación en las tablas*/
+
+delimiter //
+create procedure sueldoActor()
+begin
+declare menosSueldo int;
+declare masSueldo int;
+declare sueldoDup int;
+declare sueldoDiv int;
+set menosSueldo = (select sueldo from actores order by sueldo asc limit 1);
+set masSueldo = (select sueldo from actores order by sueldo desc limit 1);
+
+set sueldoDup=(select duplicar(menosSueldo));
+set sueldoDiv=(select dividir(masSueldo));
+
+update actores set sueldo=sueldoDup where sueldo=menosSueldo;
+update actores set sueldo=sueldoDiv where sueldo=masSueldo;
+
+select * from Actores;
+end//
+
+drop procedure sueldoActor;
+
+delimiter //
+create function duplicar(sueldoDuplicar int) returns int no sql
+begin
+declare duplicado int;
+set duplicado = sueldoDuplicar * 2;
+return duplicado;
+end//
+
+drop function duplicar;
+
+delimiter //
+create function dividir(sueldoDividir int) returns int no sql
+begin
+declare dividido int;
+set dividido = sueldoDividir / 2;
+return dividido;
+end//
+
+call sueldoActor();
