@@ -1,0 +1,92 @@
+CREATE DATABASE IF NOT EXISTS Netflix; 
+USE Netflix; 
+
+CREATE TABLE IF NOT EXISTS Peliculas( 
+id_peli int, 
+nombre_peli VARCHAR(30), 
+duracion INT, 
+director_peli VARCHAR(20), 
+género_peli ENUM ('acción', 'drama', 'comedia'), 
+nota_peli FLOAT, primary key (id_peli) ); 
+
+INSERT INTO Peliculas (nombre_peli, duracion, director_peli, género_peli, nota_peli, id_peli) 
+VALUES ('Bright', 120, 'Fernando', 'acción', 3.1, 1), 
+('Frida', 100, 'Daniel', 'drama', 7.6, 10), 
+('Los dos papas', 160, 'Adrián', 'comedia', 8.3, 11), 
+('Animales nocturnos', 185, 'Tomás', 'drama', 9.5, 100), 
+('Oceans Eleven', 150, 'Nuria', 'acción', 3.5, 21), 
+('Buscando a Nemo', 120, 'Jon', 'acción', 2.1, 17), 
+('El Hoyo', 110, 'Ivan', 'acción', 9.9, 41), 
+('Diamante en bruto', 140, 'Paola', 'acción', 7, 101);
+
+/*Ejercicio 1.- Realiza un procedimiento donde se inserte una nueva película a la tabla “Peliculas” 
+con los datos expuestos. Una vez hecho esto, haz que en el propio procedimiento se muestre la tabla resultante.
+- Nombre película: La historia interminable
+- Duración: 110
+- Director: Barbara
+- Género: acción
+- Nota: 8
+- Identificador: 3*/
+
+drop procedure ejercicio1;
+
+delimiter //
+create procedure ejercicio1()
+begin
+declare nombre varchar(30);
+declare duracion int;
+declare director varchar(20);
+declare genero varchar(30);
+declare nota decimal(2,1);
+declare identificador int;
+
+set nombre = "La historia interminable";
+set duracion = 110;
+set director = "Barbara";
+set genero = "accion";
+set nota = 8;
+set identificador = 3;
+
+INSERT INTO Peliculas (nombre_peli, duracion, director_peli, género_peli, nota_peli, id_peli) 
+VALUES (nombre, duracion, director, genero, nota, identificador);
+select * from peliculas;
+end //
+
+call ejercicio1();
+
+/*Ejercicio 2.- Realiza un procedimiento que modifique la nota de una película. El nombre de la película y 
+la nota se insertarán a través del Select. Una vez hecho esto, haz que en el propio procedimiento se muestre la tabla resultante.*/
+
+drop procedure ejercicio2;
+
+delimiter //
+create procedure ejercicio2(nombre varchar(20), nota_user decimal(2,1))
+begin
+update Peliculas set nota_peli=nota_user where nombre_peli=nombre;
+select * from Peliculas;
+end //
+
+call ejercicio2("Frida", 2.2);
+
+/*Ejercicio 3.- Realiza un procedimiento que añada valores de forma automática a nueva columna llamada 
+“Valoraciones” en la tabla películas. La columna Valoraciones podrá tener 3 valores (buena, mala o regular).
+- Si la nota de la película es menor que 3.5, la valoración será “mala”
+- Si la nota de la película es mayor que 7, la valoración será “buena”
+- Si la nota de la película está entre 3.5 y 7 (ambos incluidos), la valoración será “regular”*/
+
+delimiter //
+create procedure ejercicio3()
+begin
+
+end //
+
+/*Ejercicio 4.- Realiza un procedimiento que modifique el director/directora de una película seleccionada 
+por el usuario de la tabla Películas. Una vez hecho esto, haz que en el propio procedimiento se muestre la tabla resultante.
+- El usuario insertará el identificador de la pelícila que desea modificar a través del Select
+- El usuario insertará el nombre del director a través del select*/
+
+delimiter //
+create procedure ejercicio4()
+begin
+
+end //
