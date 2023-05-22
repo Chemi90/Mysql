@@ -1,0 +1,68 @@
+create database funciones;
+use funciones;
+
+/*Ejercicio 1.- Realiza una función donde el usuario juegue contra la máquina al juego Pares o nones donde se cumplan las siguientes condiciones.
+	- El usuario insertará su elección en el Select mediante caracteres (pares o nones), y un número
+	- La máquina “insertará” un número aleatorio del 1 al 10 dentro de la función
+	- En el resultado se deberá mostrar los siguientes datos:
+	- Elección del usuario (pares o impares)
+	- Número insertado por el usuario
+	- Número “insertado” por la máquina
+	- Suma total de ambos números
+	- Ganador del juego (máquina o usuario)*/
+    
+/*Se que en esta funcion hay parametros que pueden llegar a sobrar, como seria por ejemplo la variable maquina,
+pero decidi dejarlo ya que para un futuro si quisiera añadirle mas cosas.*/
+
+delimiter // 
+create function paresonones(numero1 int, eleccion varchar(20)) returns varchar(50) no sql
+begin 
+declare resultado varchar(50); 
+declare numero2 int;
+declare aux int;
+declare maquina varchar(20);
+set numero2 = rand()*(11 - 1);
+set aux=numero1+numero2;
+if eleccion = "pares" then set maquina = "nones";
+else set maquina = "pares";
+end if;
+if aux%2=0 and maquina = "pares" then set resultado = "Ha ganado la maquina, eres un perdedor..."; 
+else set resultado = "Has ganado a la maquina, de momento ganas..."; 
+end if; 
+return resultado; 
+end//
+
+select paresonones(5, "nones");
+
+/*Ejercicio 2.- Realiza un programa donde el usuario juegue contra la máquina al juego Piedra, papel o tijera donde se cumplan las siguientes condiciones.
+	- El usuario insertará su elección en el Select mediante caracteres (piedra, papel o tijera)
+	- La máquina “insertará” su elección de forma aleatorio dentro de la función
+	- En el resultado se deberá mostrar los siguientes datos:
+	- Elección del usuario (piedra, papel o tijera)
+	- Elección de la máquina (piedra, papel o tijera)
+	- Ganador del juego (máquina, usuario o empate)*/
+    
+
+delimiter // 
+create function piedrapapeltijera(eleccion varchar(20))
+returns varchar(50) no sql
+begin 
+declare num int;
+declare maquina varchar(20);
+declare resultado varchar(50);
+set num = floor(rand()*(4 - 1))+1;
+case num
+when 1 then set maquina = "piedra";
+when 2 then set maquina = "papel";
+when 3 then set maquina = "tijera";
+end case;
+if maquina = eleccion then set resultado = "Has empatado";
+elseif maquina = "piedra" and eleccion = "tijera" or
+	maquina = "papel" and eleccion = "piedra" or
+	maquina = "tijera" and eleccion = "papel" then set resultado = "Has perdido.";
+else set resultado = "Has ganado.";
+end if;
+return resultado; 
+end//
+    
+select piedrapapeltijera("piedra");
