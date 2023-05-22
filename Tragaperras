@@ -1,0 +1,75 @@
+DELIMITER //
+
+CREATE FUNCTION switch ()
+RETURNS VARCHAR(10) no sql
+BEGIN
+DECLARE valor int;
+DECLARE resultado VARCHAR(10); -- Aquí inicializamos resultado
+SET valor = FLOOR(RAND() * 10) + 1;
+SET resultado = CASE valor
+				WHEN 1 THEN 'Fresa'
+				WHEN 2 THEN 'Manzana'
+				WHEN 3 THEN 'Pera'
+				WHEN 4 THEN 'Limon'
+				WHEN 5 THEN 'Frambuesa'
+				WHEN 6 THEN 'Cereza'
+				WHEN 7 THEN 'Mandarina'
+				WHEN 8 THEN 'Naranja'
+				WHEN 9 THEN 'Melocoton'
+				WHEN 10 THEN 'Sandia'
+			END;
+RETURN resultado;
+END //
+
+DELIMITER //
+
+CREATE FUNCTION premios (premio VARCHAR(10))
+RETURNS DECIMAL(10, 2) NO SQL
+BEGIN
+DECLARE resultado DECIMAL(10, 2);
+CASE premio
+        WHEN 'Fresa' THEN SET resultado = 0.40;
+        WHEN 'Manzana' THEN SET resultado = 0.80;
+        WHEN 'Pera' THEN SET resultado = 1.20;
+        WHEN 'Limon' THEN SET resultado = 1.40;
+        WHEN 'Frambuesa' THEN SET resultado = 1.60;
+        WHEN 'Cereza' THEN SET resultado = 1.80;
+        WHEN 'Mandarina' THEN SET resultado = 2.00;
+        WHEN 'Naranja' THEN SET resultado = 3.00;
+        WHEN 'Melocoton' THEN SET resultado = 4.00;
+        WHEN 'Sandia' THEN SET resultado = 6.00;
+        ELSE SET resultado = 0.00;
+    END CASE;
+RETURN resultado;
+END//
+
+DELIMITER //
+
+CREATE FUNCTION tragaperras (dinero DECIMAL(10, 2))
+RETURNS VARCHAR(100) NO SQL
+BEGIN
+DECLARE ganancias DECIMAL(10, 2);
+DECLARE perdidas DECIMAL(10, 2);
+DECLARE num_tiradas INT DEFAULT 0;
+DECLARE iconos_eng1 VARCHAR(10);
+DECLARE iconos_eng2 VARCHAR(10);
+DECLARE iconos_eng3 VARCHAR(10);
+DECLARE premio DECIMAL(10, 2);
+SET perdidas = dinero;
+SET premio = 0;
+SET ganancias = 0;
+WHILE dinero >= 0.20 DO
+	SET dinero = dinero - 0.20;
+	SET num_tiradas = num_tiradas + 1;
+	SET iconos_eng1 = switch();
+	SET iconos_eng2 = switch();
+	SET iconos_eng3 = switch();
+    IF iconos_eng1 = iconos_eng2 AND iconos_eng2 = iconos_eng3 THEN
+		SET premio = premios(iconos_eng1);
+		SET ganancias = ganancias + premio;
+	END IF;
+END WHILE;
+RETURN CONCAT('Ganancias del usuario: ', ganancias, ' euros; Pérdidas del usuario: ', perdidas, ' euros. Se han realizado ', num_tiradas, ' tiradas.');
+END //
+
+select tragaperras(50);
