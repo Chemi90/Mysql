@@ -90,3 +90,142 @@ create procedure ejercicio4()
 begin
 
 end //
+
+
+
+OTRO EJERCICIO CON OTRA BBDD---------------------------------------------------------------------------------
+
+
+
+CREATE DATABASE IF NOT EXISTS SkyShowtime;
+USE SkyShowtime;
+
+drop database skyshowtime;
+
+CREATE TABLE IF NOT EXISTS Actores(
+	id_actor INT,
+    nombre VARCHAR(30),
+    fecha_nac DATE,
+    sueldo INT,
+    sexo ENUM ('femenino', 'masculino', 'otros'),
+    primary key (id_actor)
+);
+
+INSERT INTO Actores(id_actor, nombre, fecha_nac, sueldo, sexo) VALUES
+(101, 'Leonarno', '1980/12/01' , 3000000, 'masculino'),
+(102, 'Julia', '1997/09/09' , 1000000, 'femenino'),
+(103, 'Brad', '1983/02/02' , 700000, 'masculino'),
+(104, 'Carlos', '1986/03/03' , 250000, 'masculino'),
+(105, 'Santiago', '1970/04/04' , 4000000, 'masculino'),
+(106, 'Penelope', '1976/05/05' , 23000, 'femenino'),
+(107, 'Noa', '1981/06/06' , 770000, 'otros'),
+(108, 'Jon', '1996/07/07' , 6000, 'otros');
+drop procedure ejercicio2;
+select * from Actores;
+
+/*Ejercicio 1.- Realiza un procedimiento donde se modifiquen los sueldos de todos los actores, asignando el sueldo medio a todos ellos. 
+Una vez hecho esto, haz que en el propio procedimiento se muestre la tabla resultante.*/
+
+delimiter //
+create procedure ejercicio1()
+begin
+declare sueldoMedio decimal(20, 2);
+select avg(sueldo) into sueldoMedio from Actores;
+
+update Actores set sueldo = sueldoMedio;
+select * from Actores;
+end //
+
+call ejercicio1();
+
+/*Ejercicio 2.- Realiza un procedimiento que borre los X actores con más sueldo. El número de actores a borrar se insertarán a través del procedimiento. 
+Una vez hecho esto, haz que en el propio procedimiento se muestre la tabla resultante.*/
+select nombre from Actores order by sueldo desc;
+drop procedure ejercicio2;
+
+delimiter //
+create procedure ejercicio2(cant int)
+begin
+declare ActSuelMax int;
+declare aux int;
+set aux = 0;
+set ActSuelMax = (select sueldo from Actores order by sueldo desc limit 1);
+
+while aux <= cant do
+delete from Actores where sueldo = ActSuelMax;
+set aux = aux +1;
+end while;
+
+select * from actores;
+end //
+
+call ejercicio2(2);
+
+/*Ejercicio 3.- Realiza un procedimiento que cambie de nombre al tercer actor o actriz más veterano/a de la tabla Actores. 
+Una vez hecho esto, haz que en el propio procedimiento se muestre la tabla resultante.
+	- El usuario insertará el nombre que desea asignarle al actor/actriz
+	- Ten en cuenta que tú no sabes quien es el actor, solo sabes la información que aparece en el enunciado*/
+ 
+drop procedure ejercicio3;
+
+select nombre from actores order by fecha_nac asc limit 2,1;
+
+delimiter //
+create procedure ejercicio3(nom varchar(30))
+begin
+declare actorVet varchar(30);
+set actorVet = (select nombre from actores order by fecha_nac asc limit 2,1);
+
+update Actores set nombre = nom where nombre = actorVet;
+
+select * from actores;
+end //
+
+call ejercicio3('Paquito');
+
+/*Ejercicio 4.- Realiza un procedimiento que añada caracteres al actor/actriz seleccionado/a. 
+Una vez hecho esto, haz que en el propio procedimiento se muestre la tabla resultante.
+- El usuario elegirá entre el actor “joven” o “pobre”
+- Se añadirá al usuario seleccionado un número X de asteriscos
+- El número de asteriscos se calculara con la diferencia de n.º de actores/actrices (total) menos el número de caracteres del actor/actriz seleccionado/a
+
+Ejemplo) Imaginemos que en la tabla hay 15 actores/actrices, y queremos añadir asteriscos al actor que se llama Ramiro. 
+N.º total de actores (15)  - n.º de caracteres de Ramiro (6) = 9 asteriscos
+	- Nombre antes del programa: Ramiro
+	- Nombre después del programa: Ramiro**********/
+    
+drop procedure ejercicio4;
+    
+    select count(*) from Actores;
+   select char_length(select nombre from Actores order by fecha_nac desc limit 1) from actores;
+delimiter //
+create procedure ejercicio4(eleccion varchar(10))
+begin
+declare nom varchar(30);
+declare conAst int;
+declare conAct int;
+declare aux int;
+declare asteriscos varchar(30);
+
+set aux = 0;
+set asteriscos="";
+
+if eleccion = 'joven' then set nom = (select nombre from Actores order by fecha_nac desc limit 1);
+else set nom = (select nombre from Actores order by sueldo asc limit 1);
+end if;
+
+set conAct = (select count(*) from Actores);
+set conAst = (conAct - char_length(nom));
+
+while aux < conAst do
+set asteriscos = CONCAT(asteriscos, '*');
+set aux = aux +1;
+end while;
+
+update Actores set nombre = concat(nombre, asteriscos) where nombre = nom;
+
+select * from Actores;
+
+end //
+
+call ejercicio4('joven');
