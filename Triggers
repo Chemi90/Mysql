@@ -1,0 +1,118 @@
+CREATE DATABASE IF NOT EXISTS HBO;
+USE HBO;
+
+CREATE TABLE IF NOT EXISTS Peliculas(
+	id_peli int,
+    	nombre_peli VARCHAR(30),
+    	duracion INT,
+    	director_peli VARCHAR(20),
+    	género_peli ENUM ('acción', 'drama', 'comedia'),
+    	nota_peli FLOAT,
+    	primary key (id_peli)
+);
+
+CREATE TABLE IF NOT EXISTS nueva_peliculas(
+	id_peli int,
+    nombre_peli VARCHAR(30),
+    duracion INT,
+	director_peli VARCHAR(20),
+	género_peli ENUM ('acción', 'drama', 'comedia'),
+   	nota_peli FLOAT,
+	calidad enum ("buena", "regular", "mala"),
+	estado enum ("activo", "eliminado") default "activo",
+    primary key (id_peli)
+);
+
+	CREATE TABLE IF NOT EXISTS informe_modificaciones(
+		id int,
+  	 	usuario varchar(30),
+		fecha date,
+ 	  	hora time
+	);
+    
+/*Ejercicio 1.- Crea un trigger Backup_peliculas que se encargue de guardar en una segunda tabla nueva_peliculas todos los datos que se inserten en la tabla original, 
+cada vez que se realicen inserciones en la base de datos.*/
+
+delimiter //
+create trigger backup
+after insert on Peliculas
+for each row
+begin
+insert into nueva_peliculas (id_peli, nombre_peli, duracion, director_peli, género_peli, nota_peli) values
+(new.id_peli, new.nombre_peli, new.duracion, new.director_peli, new.género_peli, new.nota_peli);
+end //
+
+insert into Peliculas (id_peli, nombre_peli, duracion, director_peli, género_peli, nota_peli) values
+(1, "asas", 200, "cayetano", "acción", '9');
+
+select * from nueva_peliculas;
+
+/*Ejercicio 2.- Crea un trigger eliminadas que se encargue de asignar un valor de Estado 
+“eliminado” en la tabla nueva_peliculas a las películas que se eliminen de la tabla Peliculas.  */
+
+delimiter //
+create trigger eliminadas
+before delete on Peliculas
+for each row
+begin
+UPDATE nueva_peliculas
+SET estado = 'eliminado'
+WHERE id_peli=old.id_peli;
+end //
+
+delete from peliculas where id_peli=1;
+
+select * from nueva_peliculas;
+
+/*Ejercicio 3.- Crea un trigger calidad_peliculas que se encargue de asignar un valor de 
+Calidad en la tabla nueva_peliculas en base a la nota de las películas, cada vez que se 
+realicen inserciones en la tabla Peliculas. 
+
+	- Si la nota de las películas es mayor que 5, se les asignará calidad “buena”
+	- Si la nota de las películas es menor que 5, se les asignará calidad “mala”
+	- Si la nota de las películas es igual que 5, se les asignará calidad “regular”*/
+
+delimiter //
+create trigger calidad_peliculas
+after insert on Peliculas
+for each row
+begin
+declare nota_peli float;
+declare calidad enum ("buena", "regular", "mala");
+set nota_peli = new.nota_peli;
+if nota_peli > '5' then UPDATE nueva_peliculas SET calidad = "buena" WHERE id_peli=new.id_peli;
+elseif nota_peli < '5' then UPDATE nueva_peliculas SET calidad = "mala" WHERE id_peli=new.id_peli;
+else UPDATE nueva_peliculas SET calidad = "regular" WHERE id_peli=new.id_peli;
+end if;
+end //
+
+insert into Peliculas (id_peli, nombre_peli, duracion, director_peli, género_peli, nota_peli) values
+(5, "asas", 200, "cayetano", "acción", 1);
+
+delete from nueva_peliculas where id_peli=5;
+delete from peliculas where id_peli=5;
+drop trigger calidad_peliculas;
+select * from nueva_peliculas;
+select * from peliculas;
+
+/*Ejercicio 4.- Crea un trigger modificaciones que se encargue de almacenar en la tabla 
+Informe_modificaciones los siguientes datos cada vez que se modifique algún dato de la tabla 
+Peliculas.
+
+- ID: identificador de la película modificada
+- Usuario_conectado: usuario que ha realizado la modificación (usuario conectado en MySQL)
+- Fecha: fecha de la modificación
+- Hora: hora de la modificación*/
+
+delimiter //
+create trigger modificaciones
+after update on Peliculas
+for each row
+begin
+insert into informe_modificaciones (id, usuario, fecha, hora) values
+(old.id_peli, user(), curdate(), curtime());
+end //
+
+UPDATE peliculas SET nota_peli = 10 WHERE id_peli=5;
+
+select * from informe_modificaciones;
