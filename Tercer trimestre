@@ -1,0 +1,138 @@
+EJERCICIO 1
+
+	DELIMITER //
+CREATE TRIGGER modificaciones
+AFTER UPDATE ON triangulos
+FOR EACH ROW
+BEGIN
+
+delimiter // 
+create function peliculaAleatoria() returns varchar(50) no sql
+begin 
+
+declare numPeli int;
+declare resultado varchar(30);
+set numPeli = FLOOR(1 + RAND() * 8);
+set resultado = (select Nombre from Peliculas where ID=numPeli);
+
+return resultado; 
+end//
+
+select peliculaAleatoria();
+
+Delimiter //
+CREATE PROCEDURE cambioNota()
+BEGIN
+		
+declare Peli1 varchar(30);
+declare Peli2 varchar(30);
+declare nota1 int;
+declare nota2 int;
+set Peli1= peliculaAleatoria();
+set Peli2= peliculaAleatoria();
+
+WHILE Peli1 = Peli2 DO
+	set Peli1= peliculaAleatoria();
+	set Peli2= peliculaAleatoria();
+END WHILE;
+
+set nota1=(select nota from Peliculas where Nombre=Peli1);
+set nota2=(select nota from Peliculas where Nombre=Peli2);
+
+update Peliculas
+set nota = nota1
+where Nombre=Peli2;
+
+update Peliculas
+set nota = nota2
+where Nombre=Peli1;
+
+select * from Peliculas;
+
+END //
+
+EJERCICIO 2
+
+	DELIMITER //
+CREATE TRIGGER modificaciones
+AFTER UPDATE ON triangulos
+FOR EACH ROW
+BEGIN
+
+UPDATE triangulos_copia
+SET num = (num+1)
+WHERE id=old.id;
+
+UPDATE triangulos_copia
+SET fecha = CURDATE()
+WHERE id=old.id;
+
+UPDATE triangulos_copia
+SET hora = CURTIME()
+WHERE id=old.id;
+
+UPDATE triangulos_copia
+SET usuario = CURRENT_USER()
+WHERE id=old.id;
+        
+END //
+
+
+EJERCICIO 3
+
+	SELECT (CHAR_LENGTH(mi_columna) - CHAR_LENGTH(REPLACE(mi_columna, 'A', ''))) AS cantidad_a
+FROM mi_tabla;
+
+delimiter // 
+create function numero_a(palabra varchar(50)) returns varchar(50) no sql
+begin 
+
+declare resultado varchar(50);
+set resultado = (CHAR_LENGTH(palabra) - CHAR_LENGTH(REPLACE(palabra, 'a', '')));
+
+return resultado; 
+end//
+
+EJERCICIO 4
+
+	Delimiter //
+CREATE PROCEDURE triangulos(idi int)
+BEGIN
+		
+declare tipo varchar(20);
+declare lado11 int;
+declare lado22 int;
+declare lado33 int;
+declare base1 int;
+declare altura1 int;
+declare area1 decimal(5,2);
+declare perimetro1 decimal(5,2);
+
+set tipo = (select nombre from triangulos where id=idi);
+set lado11 = (select lado1 from triangulos where id=idi);
+set lado22 = (select lado2 from triangulos where id=idi);
+set lado33 = (select lado3 from triangulos where id=idi);
+set base1 = (select base from triangulos where id=idi);
+set altura1 = (select base from triangulos where id=idi);
+IF tipo = "rectangulo" THEN
+	set perimetro1 = lado11+lado22+lado33;
+    set area1 = base1 * altura1;
+ELSEIF "escaleno" THEN
+	set perimetro1 = lado11+lado22+lado33;
+    set area1 = SQRT((perimetro1/2)*((perimetro1/2)-lado11)*((perimetro1/2)*lado22)*((perimetro1/2)*lado33));
+ELSEIF "equilatero" then
+	set perimetro1 = lado11+lado22+lado33;
+    set area1 = lado11*0.75;
+END IF;
+
+update triangulos
+set area = area1
+where id=idi;
+
+update triangulos
+set perimetro = perimetro1
+where id=idi;
+
+select * from triangulos;
+
+END //
